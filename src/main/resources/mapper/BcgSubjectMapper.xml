@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.web.mapper.BcgSubjectMapper">
+
+    <resultMap id="BcgSubjectResult" type="com.ruoyi.web.controller.tool.BcgSubject">
+        <id property="id" column="id" />
+        <result property="subjectName" column="subject_name" />
+        <result property="subjectPhone" column="subject_phone" />
+        <result property="subjectAge" column="subject_age" />
+        <result property="createTime" column="create_time" />
+    </resultMap>
+
+    <select id="selectSubjectList" resultMap="BcgSubjectResult">
+        SELECT id, subject_name, subject_phone, subject_age, create_time
+        FROM bcg_subject
+        <if test="name != null and name != ''">
+            AND subject_name LIKE CONCAT('%', #{name}, '%')
+        </if>
+        ORDER BY create_time DESC
+        LIMIT #{offset}, #{size}
+    </select>
+
+    <select id="countSubjectList" resultType="int">
+        SELECT COUNT(*) FROM bcg_subject WHERE is_deleted = 0
+        <if test="name != null and name != ''">
+            AND subject_name LIKE CONCAT('%', #{name}, '%')
+        </if>
+    </select>
+
+
+    <insert id="insertSubject" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO bcg_subject (subject_name, subject_phone, subject_age, create_time)
+        VALUES (#{subjectName}, #{subjectPhone}, #{subjectAge}, sysdate())
+    </insert>
+    <update id="updateSubject">
+        UPDATE bcg_subject
+        <set>
+            <if test="subjectName != null">subject_name = #{subjectName},</if>
+            <if test="subjectPhone != null">subject_phone = #{subjectPhone},</if>
+            <if test="subjectAge != null">subject_age = #{subjectAge},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteSubjectById">
+        DELETE FROM bcg_subject WHERE id = #{id}
+    </delete>
+
+    <select id="countBySubjectId" resultType="int">
+        SELECT COUNT(1) FROM bcg_subject
+        WHERE id = #{id}
+    </select>
+
+</mapper>

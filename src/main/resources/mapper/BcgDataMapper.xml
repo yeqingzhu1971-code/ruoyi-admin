@@ -1,0 +1,351 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.web.mapper.BcgDataMapper">
+
+    <!--<resultMap id="BcgDataRecordResult" type="com.ruoyi.web.controller.tool.BcgDataRecord">
+        <id     property="id"             column="id" />
+        <result property="subjectId"      column="subject_id" />
+        <result property="deviceId"       column="device_id" />
+        <result property="collectionTime" column="collection_time" />
+        <result property="sampleRate"     column="sample_rate" />
+        <result property="status"         column="status" />
+        <result property="remark"         column="remark" />
+        <result property="fileUrl"        column="file_url" />
+    </resultMap>-->
+    <resultMap id="BcgDataRecordResult" type="com.ruoyi.web.controller.tool.BcgDataRecord">
+        <id     property="id"             column="id" />
+        <result property="subjectId"      column="subject_id" />
+        <result property="deviceId"       column="device_id" />
+        <result property="collectionTime" column="collection_time" />
+        <result property="sampleRate"     column="sample_rate" />
+        <result property="status"         column="status" />
+        <result property="remark"         column="remark" />
+        <result property="fileUrl"        column="file_url" />
+
+        <result property="heartRate"      column="heart_rate" />
+        <result property="hrvSdnn"        column="hrv_sdnn" />
+        <result property="respRate"       column="resp_rate" />
+        <result property="bodyMovement"   column="body_movement" />
+        <result property="sleepStatus"    column="sleep_status" />
+        <result property="healthScore"    column="health_score" />
+        <result property="processDuration" column="process_duration" />
+    </resultMap>
+
+    <resultMap id="BcgDataListVoResult" type="com.ruoyi.web.controller.tool.VO.BcgDataListVo" extends="BcgDataRecordResult">
+        <result property="subjectName"    column="subject_name" />
+        <result property="subjectAge"     column="subject_age" />
+        <result property="deviceName"     column="device_name" />
+        <result property="fileUrl"        column="file_url" />
+    </resultMap>
+
+    <select id="selectAllBcgData" resultMap="BcgDataListVoResult">
+        select
+            r.id, r.subject_id, r.device_id, s.subject_name, s.subject_age,
+            d.device_name, r.collection_time, r.sample_rate, r.status, r.remark
+        from bcg_data_record r
+                 left join bcg_subject s on r.subject_id = s.id
+                 left join bcg_device d on r.device_id = d.id
+        order by r.collection_time desc
+    </select>
+
+
+    <delete id="deleteBcgDataBySubjectId" parameterType="Long">
+        DELETE FROM bcg_data_record WHERE subject_id = #{subjectId}
+    </delete>
+
+
+    <select id="searchBcgData" parameterType="com.ruoyi.web.controller.tool.DTO.BcgDataSearchDto" resultMap="BcgDataListVoResult">
+        select r.id, r.subject_id, r.device_id, s.subject_name, s.subject_age,
+        d.device_name, r.collection_time, r.sample_rate, r.status, r.remark
+        from bcg_data_record r
+        left join bcg_subject s on r.subject_id = s.id
+        left join bcg_device d on r.device_id = d.id
+        <where>
+            <if test="subjectId != null"> and r.subject_id = #{subjectId} </if>
+            <if test="status != null"> and r.status = #{status} </if>
+            <if test="subjectName != null and subjectName != ''">
+                and s.subject_name like concat('%', #{subjectName}, '%')
+            </if>
+            <if test="beginTime != null and beginTime != ''">
+                and r.collection_time &gt;= #{beginTime}
+            </if>
+            <if test="endTime != null and endTime != ''">
+                and r.collection_time &lt;= #{endTime}
+            </if>
+        </where>
+        order by r.collection_time desc
+    </select>
+
+    <select id="selectBcgDataById" parameterType="Long" resultMap="BcgDataListVoResult">
+        select
+            r.id, r.subject_id, r.device_id, s.subject_name, s.subject_age,
+            d.device_name, r.collection_time, r.sample_rate, r.status, r.remark
+        from bcg_data_record r
+                 left join bcg_subject s on r.subject_id = s.id
+                 left join bcg_device d on r.device_id = d.id
+        where r.id = #{id}
+    </select>
+
+    <insert id="insertBcgData" parameterType="com.ruoyi.web.controller.tool.BcgDataRecord" useGeneratedKeys="true" keyProperty="id">
+        insert into bcg_data_record (subject_id, device_id, collection_time, sample_rate, status, create_time,file_url)
+        values (#{subjectId}, #{deviceId}, #{collectionTime}, #{sampleRate}, #{status}, sysdate(),#{fileUrl})
+    </insert>
+
+    <delete id="deleteBcgDataById" parameterType="Long">
+        delete from bcg_data_record where id = #{id}
+    </delete>
+
+    <delete id="deleteBcgVoltageStatsByRecordId" parameterType="Long">
+        delete from bcg_voltage_stat where record_id = #{id}
+    </delete>
+
+    <update id="updateBcgData" parameterType="com.ruoyi.web.controller.tool.BcgDataRecord">
+        UPDATE bcg_data_record
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="subjectId != null">subject_id = #{subjectId},</if>
+            <if test="deviceId != null">device_id = #{deviceId},</if>
+            <if test="collectionTime != null">collection_time = #{collectionTime},</if>
+            <if test="sampleRate != null">sample_rate = #{sampleRate},</if>
+            <if test="fileUrl != null">file_url = #{fileUrl},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="heartRate != null">heart_rate = #{heartRate},</if>
+            <if test="hrvSdnn != null">hrv_sdnn = #{hrvSdnn},</if>
+            <if test="respRate != null">resp_rate = #{respRate},</if>
+            <if test="bodyMovement != null">body_movement = #{bodyMovement},</if>
+            <if test="sleepStatus != null">sleep_status = #{sleepStatus},</if>
+            <if test="healthScore != null">health_score = #{healthScore},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            <if test="processDuration != null">process_duration = #{processDuration},</if>
+
+            <if test="reportStatus != null">report_status = #{reportStatus},</if>
+            <if test="reportTime != null">report_time = #{reportTime},</if>
+            <if test="reportFileUrl != null">report_file_url = #{reportFileUrl},</if>
+        </trim>
+        WHERE id = #{id}
+    </update>
+
+
+    <!--对于BCGshow指标展示的三个SQL语句-->
+    <select id="selectSubjectOptions" resultType="com.ruoyi.web.controller.tool.VO.BcgSubjectOptionVo">
+        SELECT DISTINCT
+            s.id AS subjectId,
+            s.subject_name AS subjectName
+        FROM bcg_subject s
+    </select>
+
+    <select id="selectRecordOptionsBySubjectId" parameterType="Long" resultType="com.ruoyi.web.controller.tool.VO.BcgRecordOptionVo">
+        SELECT
+            id,
+            collection_time AS collectionTime,
+            heart_rate AS heartRate
+        FROM bcg_data_record
+        WHERE subject_id = #{subjectId}
+            AND  status = 1
+        ORDER BY collection_time DESC
+    </select>
+
+    <select id="selectBcgMetricsById" parameterType="Long" resultType="com.ruoyi.web.controller.tool.VO.BcgMetricsVo">
+        SELECT
+            heart_rate    AS heartRate,
+            hrv_sdnn      AS hrvSdnn,
+            resp_rate     AS respRate,
+            body_movement AS bodyMovement,
+            sleep_status  AS sleepStatus,
+            health_score  AS healthScore
+        FROM bcg_data_record
+        WHERE id = #{id}
+    </select>
+   <!-- 专门用于波形预览的查询-->
+    <select id="selectBcgDataWithUrlById" parameterType="Long" resultMap="BcgDataListVoResult">
+        select
+            r.id, r.subject_id, r.device_id, r.file_url, s.subject_name, s.subject_age,
+            d.device_name, r.collection_time, r.sample_rate, r.status, r.remark
+        from bcg_data_record r
+                 left join bcg_subject s on r.subject_id = s.id
+                 left join bcg_device d on r.device_id = d.id
+        where r.id = #{id}
+    </select>
+
+
+    <select id="selectSubjectAgeById" parameterType="Long" resultType="Integer">
+        select subject_age from bcg_subject where id = #{subjectId}
+    </select>
+
+
+    <select id="selectBcgDataForProcessById" parameterType="Long" resultMap="BcgDataListVoResult">
+        select
+            id,
+            subject_id,
+            status,
+            heart_rate,
+            file_url   from bcg_data_record
+        where id = #{id}
+    </select>
+
+
+    <!--用于趋势图 分别是“HR和睡眠健康状态-->
+    <select id="selectTrendDataBySubjectId" resultType="java.util.Map">
+        SELECT * FROM (
+                          SELECT
+                              DATE_FORMAT(collection_time, '%Y-%m-%d') AS dateStr,
+                              ROUND(AVG(heart_rate), 1) AS avgHr,
+                              ROUND(AVG(health_score), 0) AS avgScore
+                          FROM bcg_data_record
+                          WHERE subject_id = #{subjectId}
+                            AND status = 1
+                            AND heart_rate IS NOT NULL
+                          GROUP BY DATE_FORMAT(collection_time, '%Y-%m-%d')
+                          ORDER BY dateStr DESC
+                              LIMIT #{days}
+                      ) t ORDER BY t.dateStr ASC
+    </select>
+
+
+
+    <select id="countTotalBcgData" resultType="int">
+        SELECT COUNT(1) FROM bcg_data_record
+    </select>
+
+    <select id="countProcessedBcgData" resultType="int">
+        SELECT COUNT(1) FROM bcg_data_record WHERE status = 1
+    </select>
+
+    <select id="selectAllProcessedDataForAnalysis" resultMap="BcgDataListVoResult">
+        SELECT
+            r.id,
+            s.subject_age,
+            r.heart_rate,
+            r.hrv_sdnn,
+            r.resp_rate,
+            r.body_movement,
+            r.health_score
+        FROM bcg_data_record r
+                 LEFT JOIN bcg_subject s ON r.subject_id = s.id
+        WHERE r.status = 1 AND r.heart_rate IS NOT NULL
+    </select>
+
+
+
+    <select id="selectReportList" parameterType="com.ruoyi.web.controller.tool.DTO.BcgDataSearchDto"
+            resultType="com.ruoyi.web.controller.tool.VO.BcgReportListVo">
+        SELECT
+        r.id              AS id,
+        r.subject_id      AS subjectId,
+        s.subject_name    AS subjectName,
+        r.collection_time AS collectionTime,
+        r.report_status   AS reportStatus,
+        r.report_time     AS reportTime,
+        r.report_file_url AS reportFileUrl
+        FROM bcg_data_record r
+        LEFT JOIN bcg_subject s ON r.subject_id = s.id
+        <where>
+            r.status = 1
+
+            <if test="subjectId != null">
+                AND r.subject_id = #{subjectId}
+            </if>
+            <if test="beginTime != null and beginTime != ''">
+                AND DATE_FORMAT(r.report_time,'%Y-%m-%d') &gt;= #{beginTime}
+            </if>
+            <if test="endTime != null and endTime != ''">
+                AND DATE_FORMAT(r.report_time,'%Y-%m-%d') &lt;= #{endTime}
+            </if>
+        </where>
+        ORDER BY r.collection_time DESC
+    </select>
+
+
+    <select id="selectBcgDataForReportById" parameterType="Long" resultType="com.ruoyi.web.controller.tool.VO.BcgDataListVo">
+        SELECT
+            r.id              AS id,
+            r.subject_id      AS subjectId,
+            r.device_id       AS deviceId,
+            s.subject_name    AS subjectName,
+            s.subject_age     AS subjectAge,
+            d.device_name     AS deviceName,
+            r.collection_time AS collectionTime,
+            r.sample_rate     AS sampleRate,
+            r.status          AS status,
+            r.remark          AS remark,
+
+            r.file_url        AS fileUrl,
+
+            r.heart_rate      AS heartRate,
+            r.hrv_sdnn        AS hrvSdnn,
+            r.resp_rate       AS respRate,
+            r.body_movement   AS bodyMovement,
+            r.sleep_status    AS sleepStatus,
+            r.health_score    AS healthScore,
+
+            r.report_status   AS reportStatus,
+            r.report_time     AS reportTime,
+            r.report_file_url AS reportFileUrl
+
+        FROM bcg_data_record r
+                 LEFT JOIN bcg_subject s ON r.subject_id = s.id
+                 LEFT JOIN bcg_device d ON r.device_id = d.id
+        WHERE r.id = #{id}
+    </select>
+
+
+
+    <select id="selectAlarmList" parameterType="com.ruoyi.web.controller.tool.DTO.BcgAlarmSearchDto"
+            resultType="com.ruoyi.web.controller.tool.VO.BcgAlarmListVo">
+        SELECT * FROM (
+        SELECT r.id AS recordId, s.id AS userId, s.subject_name AS userName, s.subject_age AS userAge,
+        r.collection_time AS collectionTime, r.sample_rate AS sampleRate,
+        1 AS alarmType, CASE WHEN r.heart_rate &gt; 100 THEN 1 ELSE -1 END AS alarmDirection, CONCAT(ROUND(r.heart_rate, 1), ' 次/分') AS alarmValue, '心率超出正常范围(60-100次/分)' AS alarmDesc
+        FROM bcg_data_record r LEFT JOIN bcg_subject s ON r.subject_id = s.id
+        WHERE r.status = 1 AND (r.heart_rate &lt; 60 OR r.heart_rate &gt; 100)
+
+        UNION ALL
+
+        SELECT r.id, s.id, s.subject_name, s.subject_age, r.collection_time, r.sample_rate,
+        2 AS alarmType,
+        CASE WHEN r.hrv_sdnn &gt; 150 THEN 1 ELSE -1 END AS alarmDirection,
+        CONCAT(ROUND(r.hrv_sdnn, 1), ' ms'), '心率变异性超出正常范围(50-150ms)'
+        FROM bcg_data_record r LEFT JOIN bcg_subject s ON r.subject_id = s.id
+        WHERE r.status = 1 AND (r.hrv_sdnn &lt; 50 OR r.hrv_sdnn &gt; 150)
+
+        UNION ALL
+
+        SELECT r.id, s.id, s.subject_name, s.subject_age, r.collection_time, r.sample_rate,
+        3 AS alarmType,
+        2 AS alarmDirection,  '不规则', '检测到节律波动异常，心律不规则'
+        FROM bcg_data_record r LEFT JOIN bcg_subject s ON r.subject_id = s.id
+        WHERE r.status = 1 AND (r.hrv_sdnn &lt; 50 OR r.hrv_sdnn &gt; 150)
+
+        UNION ALL
+
+        SELECT r.id, s.id, s.subject_name, s.subject_age, r.collection_time, r.sample_rate,
+        4 AS alarmType,
+        CASE WHEN r.resp_rate &gt; 20 THEN 1 ELSE -1 END AS alarmDirection,
+        CONCAT(ROUND(r.resp_rate, 1), ' 次/分'), '呼吸频率超出正常范围(12-20次/分)'
+        FROM bcg_data_record r LEFT JOIN bcg_subject s ON r.subject_id = s.id
+        WHERE r.status = 1 AND (r.resp_rate &lt; 12 OR r.resp_rate &gt; 20)
+
+        UNION ALL
+
+        SELECT r.id, s.id, s.subject_name, s.subject_age, r.collection_time, r.sample_rate,
+        5 AS alarmType,
+        1 AS alarmDirection, CONCAT(r.body_movement, ' 次/小时'), '体动过于频繁(正常范围0-5次/小时)'
+        FROM bcg_data_record r LEFT JOIN bcg_subject s ON r.subject_id = s.id
+        WHERE r.status = 1 AND r.body_movement &gt; 5
+
+        UNION ALL
+
+        SELECT r.id, s.id, s.subject_name, s.subject_age, r.collection_time, r.sample_rate,
+        6 AS alarmType,
+        -1 AS alarmDirection, CONCAT(r.health_score, ' 分'), '综合评分偏低，睡眠质量欠佳(健康标准≥80分)'
+        FROM bcg_data_record r LEFT JOIN bcg_subject s ON r.subject_id = s.id
+        WHERE r.status = 1 AND r.health_score &lt; 80
+        ) t
+        <where>
+            <if test="userId != null"> AND t.userId = #{userId} </if>
+            <if test="userName != null and userName != ''"> AND t.userName LIKE CONCAT('%', #{userName}, '%') </if>
+
+            <if test="alarmType != null"> AND t.alarmType = #{alarmType} </if>
+        </where>
+        ORDER BY t.collectionTime DESC
+    </select>
+</mapper>
