@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.web.mapper.BcgDeviceMapper">
+
+    <resultMap id="BcgDeviceResultMap" type="com.ruoyi.web.controller.tool.BcgDevice">
+        <id     property="id"         column="id" />
+        <result property="deviceCode" column="device_code" /> <result property="deviceName" column="device_name" />
+        <result property="createTime" column="create_time" />
+        <result property="isDeleted"  column="is_deleted" />
+    </resultMap>
+
+    <select id="selectDeviceList" resultMap="BcgDeviceResultMap">
+        SELECT id, device_code, device_name, create_time,is_deleted
+        FROM bcg_device
+        WHERE is_deleted = 0
+        <if test="deviceCode != null and deviceCode != ''">
+            AND device_code LIKE CONCAT('%', #{deviceCode}, '%')
+        </if>
+        <if test="deviceName != null and deviceName != ''">
+            AND device_name LIKE CONCAT('%', #{deviceName}, '%')
+        </if>
+        ORDER BY create_time DESC
+        LIMIT #{offset}, #{size}
+    </select>
+
+    <select id="countDeviceList" resultType="int">
+        SELECT COUNT(*) FROM bcg_device
+        <if test="deviceCode != null and deviceCode != ''">
+            AND device_code LIKE CONCAT('%', #{deviceCode}, '%')
+        </if>
+        <if test="deviceName != null and deviceName != ''">
+            AND device_name LIKE CONCAT('%', #{deviceName}, '%')
+        </if>
+    </select>
+
+    <insert id="insertDevice" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO bcg_device (device_code, device_name)
+        VALUES (#{deviceCode}, #{deviceName})
+    </insert>
+
+    <update id="updateDevice">
+        UPDATE bcg_device
+        <set>
+            <if test="deviceCode != null">device_code = #{deviceCode},</if>
+            <if test="deviceName != null">device_name = #{deviceName},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <update id="deleteDeviceById">
+        UPDATE bcg_device SET is_deleted = 1 WHERE id = #{id}
+    </update>
+
+    <select id="countByDeviceCode" resultType="int">
+        SELECT COUNT(*) FROM bcg_device
+        WHERE device_code = #{deviceCode}
+    </select>
+
+</mapper>
